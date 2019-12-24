@@ -1,4 +1,4 @@
 # BLE-Remote-Robot
 
-## Plz include those(this) library:
+## Plz include those(this) libraries(library):
   - ESP32
