@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/Users/e2ne0/Documents/Arduino/libraries/esp32-micro-sdcard-master",
+                "/Users/e2ne0/Documents/Arduino/libraries/esp32-sh1106-oled-master",
+                "/Users/e2ne0/Documents/Arduino/libraries/Adafruit_GFX_Library",
+                "/Users/e2ne0/Documents/Arduino/hardware/espressif/esp32/**"
+            ],
+            "forcedInclude": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
