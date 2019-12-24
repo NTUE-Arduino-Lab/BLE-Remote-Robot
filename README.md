@@ -1,5 +1,4 @@
 # BLE-Remote-Robot
 
-## Plz include those library:
-  - wifiboypro
+## Plz include those(this) libraries(library):
   - ESP32
