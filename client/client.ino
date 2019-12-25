@@ -26,12 +26,21 @@ bool deviceConnected = false;					  // デバイスの接続状態
 bool bInAlarm = false;							  // デバイス異常
 bool enableMeasurement = false;					  // 計測情報が有効
 
+const int motor1 = 0;
+const int motor2 = 5;
+const int motor3 = 18;
+const int motor4 = 19;
+const int forward = 36;
+const int back = 39;
+const int right = 32;
+const int left = 33;
+
 /* 通信データ */
-struct tmpData
+struct Data
 { // 計測データ
-	double pmData;
+	int state;
 };
-struct tmpData data;
+struct Data data;
 
 /* LEDピン */
 const int ledPin = 16; // 接続ピン
@@ -71,6 +80,41 @@ class advertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
 	}
 };
 
+void m_Left()
+{
+    digitalWrite(motor1, LOW);
+    digitalWrite(motor2, HIGH);
+    delay(100);
+}
+
+void m_Right()
+{
+    digitalWrite(motor1, HIGH);
+    digitalWrite(motor2, LOW);
+    delay(100);
+}
+
+void m_Forward()
+{
+    digitalWrite(motor3, LOW);
+    digitalWrite(motor4, HIGH);
+}
+
+void m_Back()
+{
+    digitalWrite(motor3, HIGH);
+    digitalWrite(motor4, LOW);
+}
+
+void m_Stop()
+{
+    digitalWrite(motor1, LOW);
+    digitalWrite(motor2, LOW);
+    digitalWrite(motor3, LOW);
+    digitalWrite(motor4, LOW);
+}
+
+
 // Notify時のコールバック関数
 static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
 						   uint8_t *pData, size_t length, bool isNotify)
@@ -78,7 +122,7 @@ static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
 
 	// 受信メッセージからボタンを切り出して表示用に編集する
 	memcpy(&data, pData, length);
-	int c = (int)data.pmData;
+	int c = data.state;
 	enableMeasurement = true;
 	Serial.print("Received data: ");
 	Serial.println(c);
@@ -139,7 +183,14 @@ void doInitialize()
 	Serial.begin(SPI_SPEED);
 	pinMode(ledPin, OUTPUT);
 	digitalWrite(ledPin, HIGH);
-
+	pinMode(motor1, OUTPUT);
+    pinMode(motor2, OUTPUT);
+    pinMode(motor3, OUTPUT);
+    pinMode(motor4, OUTPUT);
+    pinMode(forward, INPUT);
+    pinMode(back, INPUT);
+    pinMode(left, INPUT);
+    pinMode(right, INPUT);
 	Serial.println("BLE Client start ...");
 }
 
@@ -186,4 +237,49 @@ bool doPrepare()
 
 	deviceConnected = true;
 	return true;
+}
+void Movement()
+{
+    switch (data.state)
+    {
+    case 1: //forward
+        m_Forward();
+        break;
+
+    case 2: //back
+        m_Back();
+        break;
+
+    case 3: //right
+        m_Right();
+        break;
+
+    case 4: //left
+        m_Left();
+        break;
+
+    case 5: //right forward
+        m_Right();
+        m_Forward();
+        break;
+    
+    case 6: //right back
+        m_Right();
+        m_Back();
+        break;
+    
+    case 7: //left forward
+        m_Left();
+        m_Forward();
+        break;
+
+    case 8: //left back
+        m_Left();
+        m_Forward();
+        break;
+
+    case 9:
+        m_Stop();
+        break;
+    }
 }

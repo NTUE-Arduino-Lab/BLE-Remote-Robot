@@ -21,11 +21,18 @@ bool deviceConnected = false;		  // デバイスの接続状態
 bool bAbnormal = false;				  // デバイス異常判定
 
 /* 通信データ */
-struct tmpData
+struct Data
 { // 計測データ
-	double pmData;
+	int state;
 };
-struct tmpData data;
+
+const int forward = 36;
+const int back = 39;
+const int right = 32;
+const int left = 33;
+uint8_t state = 0;
+
+struct Data data;
 int incomeByte[7];
 int sensorData;
 int z = 0;
@@ -99,6 +106,26 @@ void setup()
 
 void loop()
 {
+	if (digitalRead(forward) == LOW && digitalRead(left) == HIGH && digitalRead(right) == HIGH)
+	{
+		state = 1;
+	}
+	if (digitalRead(forward) == HIGH && digitalRead(left) == HIGH && digitalRead(right) == HIGH && digitalRead(back) == HIGH)
+	{
+		state = 0;
+	}
+	if (digitalRead(back) == LOW && digitalRead(left) == HIGH && digitalRead(right) == HIGH)
+	{
+		state = 2;
+	}
+	if (digitalRead(right) == LOW)
+	{
+		state = 3;
+	}
+	if (digitalRead(left) == LOW)
+	{
+		state = 4;
+	}
 	// 接続が確立されていて異常でなければ
 	if (deviceConnected && !bAbnormal)
 	{
@@ -142,10 +169,46 @@ void doMainProcess()
 	//     return;
 	// }
 	// 構造体に値を設定して送信する
-	pCharacteristicTX->setValue((uint8_t *)&data, sizeof(tmpData));
+	pCharacteristicTX->setValue((uint8_t *)&data, sizeof(Data));
 	pCharacteristicTX->notify();
 	// シリアルモニターに表示する
 
 	// Serial.print("Send data: ");
 	// Serial.println(data.pmData);
+}
+
+void Movement()
+{
+	switch (state)
+	{
+	case 0:
+		data.state = state;
+		break;
+
+	case 1: //forward
+		data.state = state;
+		break;
+
+	case 2: //back
+		data.state = state;
+		break;
+
+	case 3: //right
+		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
+			data.state = state;
+		if (digitalRead(forward) == LOW)
+			data.state = state;
+		if (digitalRead(back) == LOW)
+			data.state = state;
+		break;
+
+	case 4: //left
+		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
+			data.state = state;
+		if (digitalRead(forward) == LOW)
+			data.state = state;
+		if (digitalRead(back) == LOW)
+			data.state = state;
+		break;
+	}
 }
