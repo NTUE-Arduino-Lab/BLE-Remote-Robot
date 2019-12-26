@@ -30,10 +30,6 @@ const int motor1 = 0;
 const int motor2 = 5;
 const int motor3 = 18;
 const int motor4 = 19;
-const int forward = 36;
-const int back = 39;
-const int right = 32;
-const int left = 33;
 
 /* 通信データ */
 struct Data
@@ -164,6 +160,7 @@ void loop()
 	// 接続状態なら
 	if (deviceConnected)
 	{
+		Movement();
 		// 測定値が有効かつ異常でなければOLEDに表示する
 		if (enableMeasurement && !bInAlarm)
 		{
@@ -187,10 +184,6 @@ void doInitialize()
     pinMode(motor2, OUTPUT);
     pinMode(motor3, OUTPUT);
     pinMode(motor4, OUTPUT);
-    pinMode(forward, INPUT);
-    pinMode(back, INPUT);
-    pinMode(left, INPUT);
-    pinMode(right, INPUT);
 	Serial.println("BLE Client start ...");
 }
 
@@ -242,6 +235,9 @@ void Movement()
 {
     switch (data.state)
     {
+	case 0:
+        m_Stop();
+        break;
     case 1: //forward
         m_Forward();
         break;
@@ -276,10 +272,6 @@ void Movement()
     case 8: //left back
         m_Left();
         m_Forward();
-        break;
-
-    case 9:
-        m_Stop();
         break;
     }
 }

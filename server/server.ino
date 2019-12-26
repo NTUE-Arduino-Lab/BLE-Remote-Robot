@@ -81,7 +81,7 @@ static void kickRoutine()
  *****************************************************************************/
 void setup()
 {
-	Serial.begin(2400);
+	Serial.begin(SPI_SPEED);
 	// 初期化処理を行ってBLEデバイスを初期化する
 	doInitialize();
 	BLEDevice::init(DEVICE_NAME);
@@ -126,6 +126,7 @@ void loop()
 	{
 		state = 4;
 	}
+	Movement();
 	// 接続が確立されていて異常でなければ
 	if (deviceConnected && !bAbnormal)
 	{
@@ -145,6 +146,10 @@ void doInitialize()
 	// pinMode(buttonPin, INPUT);
 	// pinMode(ledPin, OUTPUT);
 	// digitalWrite(ledPin, HIGH);
+	pinMode(forward, INPUT);
+	pinMode(back, INPUT);
+	pinMode(left, INPUT);
+	pinMode(right, INPUT);
 }
 
 /*  準備処理  */
@@ -183,32 +188,41 @@ void Movement()
 	{
 	case 0:
 		data.state = state;
+		Serial.println(data.state);
 		break;
 
 	case 1: //forward
 		data.state = state;
+		Serial.println(data.state);
 		break;
 
 	case 2: //back
 		data.state = state;
+		Serial.println(data.state);
 		break;
 
 	case 3: //right
 		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
 			data.state = state;
+			Serial.println(data.state);
 		if (digitalRead(forward) == LOW)
-			data.state = state;
+			data.state = 5;
+			Serial.println(data.state);
 		if (digitalRead(back) == LOW)
-			data.state = state;
+			data.state = 6;
+			Serial.println(data.state);
 		break;
 
 	case 4: //left
 		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
 			data.state = state;
+			Serial.println(data.state);
 		if (digitalRead(forward) == LOW)
-			data.state = state;
+			data.state = 7;
+			Serial.println(data.state);
 		if (digitalRead(back) == LOW)
-			data.state = state;
+			data.state = 8;
+			Serial.println(data.state);
 		break;
 	}
 }
