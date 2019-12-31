@@ -54,7 +54,7 @@ struct tmpSignal signaldata = {0xff, 0x00};
 /* タイマー制御用 */
 Ticker ticker;
 bool bReadyTicker = false;
-const int iIntervalTime = 1; // 計測間隔（10秒）
+const float iIntervalTime = 0.2; // 計測間隔（1秒）
 
 /*********************< Callback classes and functions >**********************/
 // 接続・切断時コールバック
@@ -166,7 +166,6 @@ void doPrepare(BLEService *pService)
 void doMainProcess()
 {
 	// データを読み取る
-	
 
 	// 計測失敗なら再試行させる
 	// if (isnan(c)) {
@@ -203,26 +202,54 @@ void Movement()
 
 	case 3: //right
 		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
+		{
 			data.state = state;
 			Serial.println(data.state);
-		if (digitalRead(forward) == LOW)
+		}
+		if (digitalRead(forward) == LOW && digitalRead(right) == LOW)
+		{
 			data.state = 5;
 			Serial.println(data.state);
-		if (digitalRead(back) == LOW)
+		}
+		if (digitalRead(back) == LOW && digitalRead(right) == LOW)
+		{
 			data.state = 6;
 			Serial.println(data.state);
+		}
+		if (digitalRead(right) == HIGH && digitalRead(back) == LOW)
+		{
+			state = 2;
+		}
+		if (digitalRead(right) == HIGH && digitalRead(forward) == LOW)
+		{
+			state = 1;
+		}
 		break;
 
 	case 4: //left
 		if (digitalRead(forward) == HIGH && digitalRead(back) == HIGH)
+		{
 			data.state = state;
 			Serial.println(data.state);
-		if (digitalRead(forward) == LOW)
+		}
+		if (digitalRead(forward) == LOW && digitalRead(left) == LOW)
+		{
 			data.state = 7;
 			Serial.println(data.state);
-		if (digitalRead(back) == LOW)
+		}
+		if (digitalRead(back) == LOW && digitalRead(left) == LOW)
+		{
 			data.state = 8;
 			Serial.println(data.state);
+		}
+		if (digitalRead(left) == HIGH && digitalRead(back) == LOW)
+		{
+			state = 2;
+		}
+		if (digitalRead(left) == HIGH && digitalRead(forward) == LOW)
+		{
+			state = 1;
+		}
 		break;
 	}
 }

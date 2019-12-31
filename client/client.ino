@@ -2,6 +2,10 @@
 #include <Wire.h> // For I2C interface
 #include <Arduino.h>
 #include <SPI.h>
+#include <ArduinoJson.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <DHTesp.h>
 
 /* 基本属性定義  */
 #define SPI_SPEED 115200 // SPI通信速度
@@ -28,8 +32,8 @@ bool enableMeasurement = false;					  // 計測情報が有効
 
 const int motor1 = 0;
 const int motor2 = 5;
-const int motor3 = 18;
-const int motor4 = 19;
+const int motor3 = 25;
+const int motor4 = 26;
 
 /* 通信データ */
 struct Data
@@ -49,7 +53,7 @@ class funcClientCallbacks : public BLEClientCallbacks
 	void onDisconnect(BLEClient *pClient)
 	{
 		deviceConnected = false;
-	}
+	}	
 };
 
 // アドバタイジング受信時コールバック
@@ -76,18 +80,68 @@ class advertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
 	}
 };
 
+const char *ssid = "3314";
+const char *password = "805801805801";
+
+int dhtPin = 23;
+DHTesp dht;
+AsyncWebServer server(80);
+
+String readDHTTemperature()
+{
+	float t = dht.getTemperature();
+	if (isnan(t))
+	{
+		Serial.println("Failed to read from DHT sensor!");
+		return "--";
+	}
+	else
+	{
+		Serial.println(t);
+		return String(t);
+	}
+}
+
+String readDHTHumidity()
+{
+	float h = dht.getHumidity();
+	if (isnan(h))
+	{
+		Serial.println("Failed to read from DHT sensor!");
+		return "--";
+	}
+	else
+	{
+		Serial.println(h);
+		return String(h);
+	}
+}
+
+String processor(const String &var)
+{
+	if (var == "TEMPERATURE")
+	{
+		return readDHTTemperature();
+	}
+	else if (var == "HUMIDITY")
+	{
+		return readDHTHumidity();
+	}
+	return String();
+}
+
 void m_Left()
 {
-    digitalWrite(motor1, LOW);
-    digitalWrite(motor2, HIGH);
-    delay(100);
+    digitalWrite(motor1, HIGH);
+    digitalWrite(motor2, LOW);
+    delay(5);
 }
 
 void m_Right()
 {
-    digitalWrite(motor1, HIGH);
-    digitalWrite(motor2, LOW);
-    delay(100);
+    digitalWrite(motor1, LOW);
+    digitalWrite(motor2, HIGH);
+    delay(10);
 }
 
 void m_Forward()
@@ -140,6 +194,29 @@ void setup()
 	// アクティブスキャンで10秒間スキャンする
 	pBLEScan->setActiveScan(true);
 	pBLEScan->start(10);
+	dht.setup(dhtPin, DHTesp::DHT11);
+
+	WiFi.begin(ssid, password);
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(1000);
+		Serial.println("Connecting to WiFi..");
+	}
+	Serial.println(WiFi.localIP());
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+		char responseMessage[20];
+		strcpy (responseMessage,readDHTTemperature().c_str());
+  		strcat (responseMessage,",");
+  		strcat (responseMessage,readDHTHumidity().c_str());
+		// strcat (responseMessage,"\n");
+		puts(responseMessage);
+		AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", responseMessage);
+    	response->addHeader("Access-Control-Allow-Origin","*");
+		request->send(response);
+	});
+	
+	server.begin();
+	pinMode(dhtPin, INPUT);
 }
 
 void loop()
